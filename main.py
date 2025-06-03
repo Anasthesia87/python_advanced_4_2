@@ -1,12 +1,11 @@
 from fastapi import FastAPI, HTTPException
 import json
 from http import HTTPStatus
-from pydantic import BaseModel
 from fastapi.responses import Response
 import uvicorn
 from models.AppStatus import AppStatus
-from models.User import UserData, UserDataCreateBody, UserDataUpdateBody, UserDataCreateResponse, UserDataUpdateResponse, ResourceData, SupportData, ResponseModel, ResponseModelList, ResponseModelListResource
-
+from models.User import UserData, UserDataCreateBody, UserDataUpdateBody, UserDataCreateResponse, \
+    UserDataUpdateResponse, ResponseModel, ResponseModelList, ResponseModelListResource
 
 app = FastAPI()
 
@@ -209,6 +208,25 @@ def delete_user(user_id: int):
     return Response(status_code=204)
 
 
+@app.get("/status", status_code=HTTPStatus.OK)
+def status() -> AppStatus:
+    return AppStatus(users=bool(users))
+
+
+@app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
+def get_user(user_id: int) -> UserData:
+    if user_id < 1:
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid user id")
+    if user_id > len(users_list):
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
+    return users_list[user_id - 1]
+
+
+@app.get("/api/users/", status_code=HTTPStatus.OK)
+def get_users() -> list[UserData]:
+    return users_list
+
+
 if __name__ == "__main__":
     with open("users.json") as f:
         users_list = json.load(f)
@@ -218,4 +236,4 @@ if __name__ == "__main__":
 
     print("Users loaded")
 
-    uvicorn.run(app, host="localhost", port=8001)
+    uvicorn.run(app, host="127.0.0.1", port=8001)
