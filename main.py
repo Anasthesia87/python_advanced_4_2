@@ -9,7 +9,6 @@ from models.User import UserData, UserDataCreateBody, UserDataUpdateBody, UserDa
     UserDataUpdateResponse, ResponseModel, ResponseModelList, ResponseModelListResource
 from fastapi_pagination import Page, paginate
 
-
 app = FastAPI()
 
 users_list: list[UserData] = []
@@ -229,8 +228,9 @@ def get_user(user_id: int) -> UserData:
 def get_users() -> list[UserData]:
     return users_list
 
+
 @app.get("/api/users", response_model=Page[UserData])
-def get_list_users(params: Params = Depends()):
+def get_list_users_with_pagination(params: Params = Depends()):
     return paginate(users_list, params)
 
 
