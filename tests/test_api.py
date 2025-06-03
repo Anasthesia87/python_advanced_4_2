@@ -164,3 +164,19 @@ def test_pagination_items_count(test_data):
     params = Params(page=1, size=6)
     page = paginate(test_data, params)
     assert len(page.items) == 6
+
+@pytest.mark.parametrize("size, expected_pages", [
+    (5, 3), (10, 2), (12, 1), (20, 1), (25, 1)
+])
+def test_pagination_pages_count(test_data, size, expected_pages):
+    params = Params(page=1, size=size)
+    result = paginate(test_data, params)
+    calculated_pages = (result.total + size - 1) // size
+    assert calculated_pages == expected_pages
+
+
+def test_pagination_different_pages(test_data):
+    size = 5
+    page1 = paginate(test_data, params=Params(page=1, size=size))
+    page2 = paginate(test_data, params=Params(page=2, size=size))
+    assert page1.items != page2.items
