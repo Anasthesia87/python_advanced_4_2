@@ -1,6 +1,7 @@
 import pytest
 import requests
 from jsonschema import validate
+from fastapi_pagination import Page, add_pagination, paginate, Params
 
 from schemas import (get_list_user_schema, get_single_user_schema, get_list_resource_schema, create_user_schema,
                      update_put_user_schema, update_patch_user_schema)
@@ -16,7 +17,7 @@ def test_api_list_users_status_code_200(base_url, page_number):
 @pytest.mark.parametrize("page_number", [
     (2)
 ])
-def test_api_list_users_response_not_empty(base_url,page_number):
+def test_api_list_users_response_not_empty(base_url, page_number):
     # url = f"https://reqres.in/api/users?page={page_number}"
     url = f"{base_url}/api/users?page={page_number}"
     response = requests.get(url)
@@ -27,7 +28,7 @@ def test_api_list_users_response_not_empty(base_url,page_number):
 @pytest.mark.parametrize("page_number", [
     (2)
 ])
-def test_api_list_users_validate_response_schema(base_url,page_number):
+def test_api_list_users_validate_response_schema(base_url, page_number):
     # url = f"https://reqres.in/api/users?page={page_number}"
     url = f"{base_url}/api/users?page={page_number}"
     headers = {'x-api-key': 'reqres-free-v1'}
@@ -39,7 +40,7 @@ def test_api_list_users_validate_response_schema(base_url,page_number):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_single_user_status_code_200(base_url,user_id):
+def test_api_single_user_status_code_200(base_url, user_id):
     # url = f"https://reqres.in/api/users/{user_id}"
     url = f"{base_url}/api/users/{user_id}"
     headers = {'x-api-key': 'reqres-free-v1'}
@@ -50,7 +51,7 @@ def test_api_single_user_status_code_200(base_url,user_id):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_single_user_validate_response_schema(base_url,user_id):
+def test_api_single_user_validate_response_schema(base_url, user_id):
     # url = f"https://reqres.in/api/users/{user_id}"
     url = f"{base_url}/api/users/{user_id}"
     headers = {'x-api-key': 'reqres-free-v1'}
@@ -112,7 +113,7 @@ def test_api_create_user_attributes_match_expected_values(base_url):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_put_update_user_status_code_200(base_url,user_id):
+def test_api_put_update_user_status_code_200(base_url, user_id):
     response = requests.put(  # "https://reqres.in/api/users/2",
         url=f"{base_url}/api/users/{user_id}",
         json={"name": "morpheus", "job": "zion resident"})
@@ -122,7 +123,7 @@ def test_api_put_update_user_status_code_200(base_url,user_id):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_put_update_user_validate_response_schema(base_url,user_id):
+def test_api_put_update_user_validate_response_schema(base_url, user_id):
     response = requests.put(  # "https://reqres.in/api/users/2"
         url=f"{base_url}/api/users/{user_id}",
         json={"name": "morpheus", "job": "zion resident"})
@@ -133,7 +134,7 @@ def test_api_put_update_user_validate_response_schema(base_url,user_id):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_patch_update_user_status_code_200(base_url,user_id):
+def test_api_patch_update_user_status_code_200(base_url, user_id):
     response = requests.patch(  # "https://reqres.in/api/users/2",
         url=f"{base_url}/api/users/{user_id}",
         json={"name": "morpheus", "job": "zion resident"})
@@ -143,7 +144,7 @@ def test_api_patch_update_user_status_code_200(base_url,user_id):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_patch_update_user_validate_response_schema(base_url,user_id):
+def test_api_patch_update_user_validate_response_schema(base_url, user_id):
     response = requests.patch(  # "https://reqres.in/api/users/2",
         url=f"{base_url}/api/users/{user_id}",
         json={"name": "morpheus", "job": "zion resident"})
@@ -154,6 +155,12 @@ def test_api_patch_update_user_validate_response_schema(base_url,user_id):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_delete_user_status_code_204(base_url,user_id):
+def test_api_delete_user_status_code_204(base_url, user_id):
     response = requests.delete(url=f"{base_url}/api/users/{user_id}")
     assert response.status_code == 204
+
+
+def test_pagination_items_count(test_data):
+    params = Params(page=1, size=6)
+    page = paginate(test_data, params)
+    assert len(page.items) == 6

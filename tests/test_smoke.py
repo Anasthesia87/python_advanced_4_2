@@ -2,6 +2,7 @@ import pytest
 import requests
 from http import HTTPStatus
 
+from main import users_list
 from models.User import UserData, ResponseModel
 
 
@@ -15,6 +16,7 @@ def users(base_url):
 def test_get_users(base_url):
     response = requests.get(f"{base_url}/api/users/")
     assert response.status_code == HTTPStatus.OK
+    assert isinstance(users_list, list)
 
     users = response.json()
     for user in users:

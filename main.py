@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi_pagination import Params
 import json
 from http import HTTPStatus
 from fastapi.responses import Response
@@ -6,6 +7,8 @@ import uvicorn
 from models.AppStatus import AppStatus
 from models.User import UserData, UserDataCreateBody, UserDataUpdateBody, UserDataCreateResponse, \
     UserDataUpdateResponse, ResponseModel, ResponseModelList, ResponseModelListResource
+from fastapi_pagination import Page, paginate
+
 
 app = FastAPI()
 
@@ -225,6 +228,10 @@ def get_user(user_id: int) -> UserData:
 @app.get("/api/users/", status_code=HTTPStatus.OK)
 def get_users() -> list[UserData]:
     return users_list
+
+@app.get("/api/users", response_model=Page[UserData])
+def get_list_users(params: Params = Depends()):
+    return paginate(users_list, params)
 
 
 if __name__ == "__main__":
