@@ -2,7 +2,7 @@ import pytest
 import requests
 from http import HTTPStatus
 
-from main import users_list, resources_list
+from main import users_list
 from models.User import UserData, ResponseModel, ResourceData
 
 
