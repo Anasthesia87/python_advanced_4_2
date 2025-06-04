@@ -160,24 +160,47 @@ def test_api_delete_user_status_code_204(base_url, user_id):
     assert response.status_code == 204
 
 
-def test_api_list_users_pagination_items_count(test_data):
+def test_api_list_users_pagination_items_count(test_data_users):
     params = Params(page=1, size=6)
-    page = paginate(test_data, params)
+    page = paginate(test_data_users, params)
     assert len(page.items) == 6
 
 
 @pytest.mark.parametrize("size, expected_pages", [
     (5, 3), (10, 2), (12, 1), (20, 1), (25, 1)
 ])
-def test_api_list_users_pagination_pages_count(test_data, size, expected_pages):
+def test_api_list_users_pagination_pages_count(test_data_users, size, expected_pages):
     params = Params(page=1, size=size)
-    result = paginate(test_data, params)
+    result = paginate(test_data_users, params)
     calculated_pages = (result.total + size - 1) // size
     assert calculated_pages == expected_pages
 
 
-def test_api_list_users_pagination_different_pages(test_data):
+def test_api_list_users_pagination_different_pages(test_data_users):
     size = 5
-    page1 = paginate(test_data, params=Params(page=1, size=size))
-    page2 = paginate(test_data, params=Params(page=2, size=size))
+    page1 = paginate(test_data_users, params=Params(page=1, size=size))
+    page2 = paginate(test_data_users, params=Params(page=2, size=size))
+    assert page1.items != page2.items
+
+
+def test_api_list_resources_pagination_items_count(test_data_resources):
+    params = Params(page=1, size=6)
+    page = paginate(test_data_resources, params)
+    assert len(page.items) == 6
+
+
+@pytest.mark.parametrize("size, expected_pages", [
+    (5, 3), (10, 2), (12, 1), (20, 1), (25, 1)
+])
+def test_api_list_resources_pagination_pages_count(test_data_resources, size, expected_pages):
+    params = Params(page=1, size=size)
+    result = paginate(test_data_resources, params)
+    calculated_pages = (result.total + size - 1) // size
+    assert calculated_pages == expected_pages
+
+
+def test_api_list_resources_pagination_different_pages(test_data_resources):
+    size = 5
+    page1 = paginate(test_data_resources, params=Params(page=1, size=size))
+    page2 = paginate(test_data_resources, params=Params(page=2, size=size))
     assert page1.items != page2.items

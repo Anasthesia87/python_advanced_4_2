@@ -6,12 +6,13 @@ from fastapi.responses import Response
 import uvicorn
 from models.AppStatus import AppStatus
 from models.User import UserData, UserDataCreateBody, UserDataUpdateBody, UserDataCreateResponse, \
-    UserDataUpdateResponse, ResponseModel, ResponseModelList, ResponseModelListResource
+    UserDataUpdateResponse, ResponseModel, ResponseModelList, ResponseModelListResource, ResourceData
 from fastapi_pagination import Page, paginate
 
 app = FastAPI()
 
 users_list: list[UserData] = []
+resources_list: list[ResourceData] = []
 
 users = {
     2: {
@@ -232,6 +233,11 @@ def get_users() -> list[UserData]:
 @app.get("/api/users", response_model=Page[UserData])
 def get_list_users_with_pagination(params: Params = Depends()):
     return paginate(users_list, params)
+
+
+@app.get("/api/unknown", response_model=Page[ResourceData])
+def get_list_resources_with_pagination(params: Params = Depends()):
+    return paginate(resources_list, params)
 
 
 if __name__ == "__main__":
