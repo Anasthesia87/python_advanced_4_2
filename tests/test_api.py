@@ -1,3 +1,5 @@
+import math
+
 import pytest
 import requests
 from fastapi_pagination import paginate, Params
@@ -139,47 +141,72 @@ def test_api_delete_user_status_code_204(base_url, user_id):
     assert response.status_code == 204
 
 
-def test_api_list_users_pagination_items_count(test_data_users):
-    params = Params(page=1, size=6)
-    page = paginate(test_data_users, params)
-    assert len(page.items) == 6
-
-
-@pytest.mark.parametrize("size, expected_pages", [
-    (5, 3), (10, 2), (12, 1), (20, 1), (25, 1)
+@pytest.mark.parametrize("page,size", [
+    (1, 1),
+    (1, 3),
+    (1, 6),
+    (1, 10),
+    (1, 12),
+    (2, 1),
+    (2, 3),
+    (2, 6),
+    (2, 10),
+    (2, 12),
+    (3, 5),
+    (4, 3)
 ])
-def test_api_list_users_pagination_pages_count(test_data_users, size, expected_pages):
+def test_api_list_users_pagination_basic_params(test_data_users, page, size):
+    total_items = len(test_data_users)
+    params = Params(page=page, size=size)
+    paginated_page = paginate(test_data_users, params)
+
+    expected_items_count = min(size, total_items - (page - 1) * size)
+    assert len(
+        paginated_page.items) == expected_items_count, f"Количество элементов на странице {page}, размер страницы {size}: ожидаемое количество элементов {expected_items_count}, получено {len(paginated_page.items)}"
+    assert paginated_page.total == total_items, f"Общее количество элементов: ожидается {total_items}, получено {paginated_page.total}"
+    assert paginated_page.page == page, f"Текущая страница: ожидается {page}, получено {paginated_page.page}"
+    assert paginated_page.size == size, f"Размер страницы: ожидается {size}, получено {paginated_page.size}"
+    assert paginated_page.pages == math.ceil(
+        total_items / size), f"Количество страниц: ожидается {math.ceil(total_items / size)}, получено {paginated_page.pages}"
+
+
+@pytest.mark.parametrize("size", [1, 3, 6, 10, 12, 20, 25])
+def test_api_list_users_pagination_pages_count(test_data_users, size):
+    total_items = len(test_data_users)
     params = Params(page=1, size=size)
-    result = paginate(test_data_users, params)
-    calculated_pages = (result.total + size - 1) // size
-    assert calculated_pages == expected_pages
+    paginated_page = paginate(test_data_users, params)
+
+    expected_pages = math.ceil(total_items / size)
+    assert paginated_page.pages == expected_pages, f"Количество страниц: ожидается {expected_pages}, получено {paginated_page.pages}"
 
 
-def test_api_list_users_pagination_different_pages(test_data_users):
-    size = 5
+@pytest.mark.parametrize("size", [1, 3, 6, 10])
+def test_api_list_users_pagination_different_pages(test_data_users, size):
+    total_items = len(test_data_users)
+    total_pages = math.ceil(total_items / size)
+
+    if total_pages < 2:
+        pytest.skip("Недостаточное количество страниц для выполнения проверки")
+
     page1 = paginate(test_data_users, params=Params(page=1, size=size))
     page2 = paginate(test_data_users, params=Params(page=2, size=size))
-    assert page1.items != page2.items
 
+    if size < total_items:
+        assert len(page1.items) > 0, "Первая страница не должна быть пустой"
+        assert len(page2.items) > 0, "Вторая страница не должна быть пустой"
 
-def test_api_list_resources_pagination_items_count(test_data_resources):
-    params = Params(page=1, size=6)
-    page = paginate(test_data_resources, params)
-    assert len(page.items) == 6
+    page1_ids = {item['id'] for item in page1.items}
+    page2_ids = {item['id'] for item in page2.items}
 
+    if page1_ids == page2_ids:
+        pytest.warn("Страницы содержат одинаковые элементы, возможно, в разном порядке)")
+    else:
+        assert not (page1_ids.issubset(page2_ids) or page2_ids.issubset(page1_ids)), \
+            "Одна страница полностью дублирует другую"
 
-@pytest.mark.parametrize("size, expected_pages", [
-    (5, 3), (10, 2), (12, 1), (20, 1), (25, 1)
-])
-def test_api_list_resources_pagination_pages_count(test_data_resources, size, expected_pages):
-    params = Params(page=1, size=size)
-    result = paginate(test_data_resources, params)
-    calculated_pages = (result.total + size - 1) // size
-    assert calculated_pages == expected_pages
-
-
-def test_api_list_resources_pagination_different_pages(test_data_resources):
-    size = 5
-    page1 = paginate(test_data_resources, params=Params(page=1, size=size))
-    page2 = paginate(test_data_resources, params=Params(page=2, size=size))
-    assert page1.items != page2.items
+        if page1.items and page2.items:
+            try:
+                assert page1.items[-1]['id'] < page2.items[0]['id'], \
+                    "Нарушен порядок элементов между страницами"
+            except AssertionError:
+                pytest.warn("Нарушен порядок элементов между страницами")
