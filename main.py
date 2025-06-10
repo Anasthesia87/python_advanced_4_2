@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi_pagination import Params
+from fastapi_pagination import Params, add_pagination
 import json
 from http import HTTPStatus
 from fastapi.responses import Response
@@ -18,14 +18,11 @@ resources_list: list[ResourceData] = []
 
 
 
-@app.get("/api/users", response_model=ResponseModelList)
-def get_list_users(page: int = 2):
-    user_data = users_with_page.get(page)
-    if not user_data:
-        raise HTTPException(status_code=404, detail="Page not found")
+@app.get("/api/users", response_model=Page[UserData], status_code=HTTPStatus.OK)
+def get_list_users():
+    return paginate(users_list)
 
-    return user_data
-
+add_pagination(app)
 
 @app.get("/api/users/{user_id}", response_model=ResponseModel)
 def get_single_user(user_id: int):
@@ -107,19 +104,19 @@ def get_user(user_id: int) -> UserData:
     return users_list[user_id - 1]
 
 
-@app.get("/api/users/", status_code=HTTPStatus.OK)
-def get_users() -> list[UserData]:
-    return users_list
-
-
-@app.get("/api/users", response_model=Page[UserData])
-def get_list_users_with_pagination(params: Params = Depends()):
-    return paginate(users_list, params)
-
-
-@app.get("/api/unknown", response_model=Page[ResourceData])
-def get_list_resources_with_pagination(params: Params = Depends()):
-    return paginate(resources_list, params)
+# @app.get("/api/users/", status_code=HTTPStatus.OK)
+# def get_users() -> list[UserData]:
+#     return users_list
+#
+#
+# @app.get("/api/users", response_model=Page[UserData])
+# def get_list_users_with_pagination(params: Params = Depends()):
+#     return paginate(users_list, params)
+#
+#
+# @app.get("/api/unknown", response_model=Page[ResourceData])
+# def get_list_resources_with_pagination(params: Params = Depends()):
+#     return paginate(resources_list, params)
 
 
 if __name__ == "__main__":
