@@ -4,7 +4,6 @@ from http import HTTPStatus
 import pytest
 import requests
 from fastapi_pagination import paginate, Params
-from functions import first
 from pydantic import ValidationError
 
 from models.User import ResponseModelList, ResponseModel, ResponseModelListResource, UserDataCreateResponse, \
@@ -183,11 +182,6 @@ def test_api_list_users_pagination_basic_params(base_url, test_data_users, page,
 
 
 
-
-
-
-
-
 @pytest.mark.parametrize("size", [1, 3, 6, 10, 12, 15])
 def test_api_list_users_pagination_pages_count(base_url, test_data_users, size):
 
@@ -208,8 +202,8 @@ def test_api_list_users_pagination_different_pages(base_url):
     page1 = 1
     page2 = 2
 
-    response1 = requests.get(f"{base_url}users/?page={page1}&size={size}")
-    response2 = requests.get(f"{base_url}users/?page={page2}&size={size}")
+    response1 = requests.get(f"{base_url}/api/users/?page={page1}&size={size}")
+    response2 = requests.get(f"{base_url}/api/users/?page={page2}&size={size}")
 
     assert response1.status_code == 200
     assert response2.status_code == 200
