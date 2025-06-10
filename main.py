@@ -62,14 +62,6 @@ def update_user_patch(user: UserDataUpdateBody):
     }
 
 
-@app.delete("/api/users/{user_id}")
-def delete_user(user_id: int):
-    if user_id not in users_list:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    return Response(status_code=204)
-
-
 @app.get("/status", status_code=HTTPStatus.OK)
 def status() -> AppStatus:
     return AppStatus(users=bool(users_list))
