@@ -163,7 +163,7 @@ def test_api_list_users_pagination_pages_count(base_url, test_data_users, size):
                "pages"] == expected_pages, f"Количество страниц: ожидается {expected_pages}, получено {paginated_data.pages}"
 
 
-def test_api_list_users_pagination_different_pages(base_url):
+def test_api_list_users_pagination_different_pages(base_url, test_data_users):
     size = 6
     first_page = 1
     second_page = 2
