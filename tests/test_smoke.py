@@ -4,7 +4,7 @@ from http import HTTPStatus
 
 from pydantic import ValidationError
 
-from models.User import UserData, ResponseModel
+from models.User import UserData
 
 
 def test_service_availability(base_url):
