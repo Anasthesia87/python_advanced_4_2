@@ -1,14 +1,13 @@
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi_pagination import Params, add_pagination
+from fastapi import FastAPI, HTTPException
+from fastapi_pagination import add_pagination
 import json
 from http import HTTPStatus
 from fastapi.responses import Response
 import uvicorn
 from models.AppStatus import AppStatus
 from models.User import UserData, UserDataCreateBody, UserDataUpdateBody, UserDataCreateResponse, \
-    UserDataUpdateResponse, ResponseModel, ResponseModelList, ResponseModelListResource, ResourceData
+    UserDataUpdateResponse, ResponseModel, ResponseModelListResource, ResourceData
 from fastapi_pagination import Page, paginate
-from data.users_data import users_with_page
 from data.resources_data import resources_with_page
 
 app = FastAPI()
@@ -26,7 +25,7 @@ add_pagination(app)
 
 @app.get("/api/users/{user_id}", response_model=ResponseModel)
 def get_single_user(user_id: int):
-    for page_data in users_with_page.values():
+    for page_data in users_list.values():
         for user in page_data["data"]:
             if user["id"] == user_id:
                 return {"data": user,
@@ -84,7 +83,7 @@ def update_user_patch(user: UserDataUpdateBody):
 
 @app.delete("/api/users/{user_id}")
 def delete_user(user_id: int):
-    if user_id not in users_with_page:
+    if user_id not in users_list:
         raise HTTPException(status_code=404, detail="User not found")
 
     return Response(status_code=204)
@@ -92,7 +91,7 @@ def delete_user(user_id: int):
 
 @app.get("/status", status_code=HTTPStatus.OK)
 def status() -> AppStatus:
-    return AppStatus(users=bool(users_with_page))
+    return AppStatus(users=bool(users_list))
 
 
 @app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
@@ -103,20 +102,6 @@ def get_user(user_id: int) -> UserData:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
     return users_list[user_id - 1]
 
-
-# @app.get("/api/users/", status_code=HTTPStatus.OK)
-# def get_users() -> list[UserData]:
-#     return users_list
-#
-#
-# @app.get("/api/users", response_model=Page[UserData])
-# def get_list_users_with_pagination(params: Params = Depends()):
-#     return paginate(users_list, params)
-#
-#
-# @app.get("/api/unknown", response_model=Page[ResourceData])
-# def get_list_resources_with_pagination(params: Params = Depends()):
-#     return paginate(resources_list, params)
 
 
 if __name__ == "__main__":

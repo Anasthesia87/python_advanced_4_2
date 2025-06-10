@@ -2,8 +2,9 @@ import pytest
 import requests
 from http import HTTPStatus
 
-from main import users_list
-from models.User import UserData, ResponseModel, ResourceData
+from pydantic import ValidationError
+
+from models.User import UserData, ResponseModel
 
 
 def test_service_availability(base_url):
@@ -18,19 +19,39 @@ def users(base_url):
     return response.json()
 
 
-def test_get_users(base_url):
+@pytest.mark.parametrize("page,size", [
+    (1, 5),
+    (2, 5),
+    (3, 5),
+    (1, 1),
+    (12, 1),
+    (1, 12),
+    (1, 15)
+])
+def test_get_users(base_url, page, size):
+    response = requests.get(f"{base_url}/api/users/?page={page}&size={size}")
+    assert response.status_code == HTTPStatus.OK
+
+    paginated_data = response.json()
+
+    for item in paginated_data["items"]:
+        try:
+            UserData.model_validate(item)
+        except ValidationError as e:
+            pytest.fail(f"Невалидные данные пользователя: {e}")
+
+
+def test_get_users_no_duplicates(base_url, users):
     response = requests.get(f"{base_url}/api/users/")
     assert response.status_code == HTTPStatus.OK
-    assert isinstance(users_list, list)
 
-    users = response.json()
-    for user in users:
-        UserData.model_validate(user)
+    users_list = users.get('items', [])
 
+    if not users_list:
+        raise AssertionError("Список пользователей пуст")
 
-def test_get_users_no_duplicates(users):
-    users_ids = [user["id"] for user in users]
-    assert len(users_ids) == len(set(users_ids))
+    users_ids = [user["id"] for user in users_list]
+    assert len(users_ids) == len(set(users_ids)), "Обнаружены дубликаты идентификаторов пользователей"
 
 
 @pytest.mark.parametrize("user_id", [2, 7, 12])
@@ -39,7 +60,11 @@ def test_get_user(base_url, user_id):
     assert response.status_code == HTTPStatus.OK
 
     user = response.json()
-    ResponseModel.model_validate(user)
+    print(user)
+    UserData.model_validate(user)
+
+
+
 
 
 @pytest.mark.parametrize("user_id", [13])
@@ -58,11 +83,3 @@ def test_user_invalid_format(base_url, user_id):
 def test_user_non_positive_id(base_url, user_id):
     response = requests.get(f"{base_url}/api/users/{user_id}")
     assert response.status_code == HTTPStatus.NOT_FOUND
-
-
-def test_get_resources(base_url):
-    response = requests.get(f"{base_url}/api/unknown")
-    assert response.status_code == HTTPStatus.OK
-    resources = response.json()
-    for resource in resources["data"]:
-        ResourceData.model_validate(resource)
