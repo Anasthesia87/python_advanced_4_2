@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi_pagination import add_pagination
 import json
 from http import HTTPStatus
-from fastapi.responses import Response
 import uvicorn
 from models.AppStatus import AppStatus
 from models.User import UserData, UserDataCreateBody, UserDataUpdateBody, UserDataCreateResponse, \
