@@ -6,48 +6,29 @@ from fastapi.responses import Response
 import uvicorn
 from models.AppStatus import AppStatus
 from models.User import UserData, UserDataCreateBody, UserDataUpdateBody, UserDataCreateResponse, \
-    UserDataUpdateResponse, ResponseModel, ResponseModelListResource, ResourceData
+    UserDataUpdateResponse
 from fastapi_pagination import Page, paginate
-from data.resources_data import resources_with_page
 
 app = FastAPI()
 
 users_list: list[UserData] = []
-resources_list: list[ResourceData] = []
-
 
 
 @app.get("/api/users", response_model=Page[UserData], status_code=HTTPStatus.OK)
 def get_list_users():
     return paginate(users_list)
 
+
 add_pagination(app)
 
-@app.get("/api/users/{user_id}", response_model=ResponseModel)
-def get_single_user(user_id: int):
-    for page_data in users_list.values():
-        for user in page_data["data"]:
-            if user["id"] == user_id:
-                return {"data": user,
-                        "support": page_data["support"]}
 
-    raise HTTPException(status_code=404, detail="User not found")
-
-
-@app.get("/api/unknown", response_model=ResponseModelListResource)
-def get_list_resource():
-    resource_data = resources_with_page.get(1)
-    if not resource_data:
-        raise HTTPException(status_code=404, detail="Resource not found")
-
-    return {
-        "page": resource_data["page"],
-        "per_page": resource_data["per_page"],
-        "total": resource_data["total"],
-        "total_pages": resource_data["total_pages"],
-        "data": resource_data["data"],
-        "support": resource_data["support"],
-    }
+@app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
+def get_user(user_id: int) -> UserData:
+    if user_id < 1:
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid user id")
+    if user_id > len(users_list):
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
+    return users_list[user_id - 1]
 
 
 @app.post("/api/users", response_model=UserDataCreateResponse, status_code=201)
@@ -92,16 +73,6 @@ def delete_user(user_id: int):
 @app.get("/status", status_code=HTTPStatus.OK)
 def status() -> AppStatus:
     return AppStatus(users=bool(users_list))
-
-
-@app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
-def get_user(user_id: int) -> UserData:
-    if user_id < 1:
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid user id")
-    if user_id > len(users_list):
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
-    return users_list[user_id - 1]
-
 
 
 if __name__ == "__main__":

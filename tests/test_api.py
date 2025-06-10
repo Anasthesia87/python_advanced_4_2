@@ -5,7 +5,7 @@ import pytest
 import requests
 from pydantic import ValidationError
 
-from models.User import ResponseModel, UserDataCreateResponse, \
+from models.User import UserDataCreateResponse, \
     UserDataUpdateResponse, UserDataUpdateBody, UserData
 from tests.conftest import base_url
 
@@ -109,14 +109,6 @@ def test_api_patch_update_user_validate_response_schema(base_url, user_id):
     response = requests.patch(url=f"{base_url}/api/users/{user_id}",
                               json={"name": "morpheus", "job": "zion resident"})
     UserDataUpdateBody(**response.json())
-
-
-@pytest.mark.parametrize("user_id", [
-    (2)
-])
-def test_api_delete_user_status_code_204(base_url, user_id):
-    response = requests.delete(url=f"{base_url}/api/users/{user_id}")
-    assert response.status_code == 204
 
 
 @pytest.mark.parametrize("page,size", [

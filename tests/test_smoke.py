@@ -64,9 +64,6 @@ def test_get_user(base_url, user_id):
     UserData.model_validate(user)
 
 
-
-
-
 @pytest.mark.parametrize("user_id", [13])
 def test_user_nonexistent_values(base_url, user_id):
     response = requests.get(f"{base_url}/api/users/{user_id}")
@@ -82,4 +79,4 @@ def test_user_invalid_format(base_url, user_id):
 @pytest.mark.parametrize("user_id", [-1, 0])
 def test_user_non_positive_id(base_url, user_id):
     response = requests.get(f"{base_url}/api/users/{user_id}")
-    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
