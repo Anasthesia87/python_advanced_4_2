@@ -28,7 +28,7 @@ def users(base_url):
     (1, 12),
     (1, 15)
 ])
-def test_get_users(base_url, page, size):
+def test_get_users(base_url: str, page: int, size: int):
     response = requests.get(f"{base_url}/api/users/?page={page}&size={size}")
     assert response.status_code == HTTPStatus.OK
 
@@ -41,7 +41,7 @@ def test_get_users(base_url, page, size):
             pytest.fail(f"Невалидные данные пользователя: {e}")
 
 
-def test_get_users_no_duplicates(base_url, users):
+def test_get_users_no_duplicates(base_url: str, users: dict):
     response = requests.get(f"{base_url}/api/users/")
     assert response.status_code == HTTPStatus.OK
 
@@ -55,7 +55,7 @@ def test_get_users_no_duplicates(base_url, users):
 
 
 @pytest.mark.parametrize("user_id", [2, 7, 12])
-def test_get_user(base_url, user_id):
+def test_get_user(base_url: str, user_id: int):
     response = requests.get(f"{base_url}/api/users/{user_id}")
     assert response.status_code == HTTPStatus.OK
 
@@ -65,18 +65,18 @@ def test_get_user(base_url, user_id):
 
 
 @pytest.mark.parametrize("user_id", [13])
-def test_user_nonexistent_values(base_url, user_id):
+def test_user_nonexistent_values(base_url: str, user_id: int):
     response = requests.get(f"{base_url}/api/users/{user_id}")
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 @pytest.mark.parametrize("user_id", ["fafaf", "123abc"])
-def test_user_invalid_format(base_url, user_id):
+def test_user_invalid_format(base_url: str, user_id: str):
     response = requests.get(f"{base_url}/api/users/{user_id}")
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 @pytest.mark.parametrize("user_id", [-1, 0])
-def test_user_non_positive_id(base_url, user_id):
+def test_user_non_positive_id(base_url: str, user_id: int):
     response = requests.get(f"{base_url}/api/users/{user_id}")
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY

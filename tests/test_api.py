@@ -11,7 +11,7 @@ from tests.conftest import base_url
 
 
 @pytest.mark.parametrize("page_number", [2])
-def test_api_list_users_status_code_200(base_url, page_number):
+def test_api_list_users_status_code_200(base_url: str, page_number: int):
     url = f"{base_url}/api/users?page={page_number}"
     response = requests.get(url)
     assert response.status_code == 200
@@ -26,7 +26,7 @@ def test_api_list_users_status_code_200(base_url, page_number):
     (1, 12),
     (1, 15)
 ])
-def test_api_list_users_response_not_empty(base_url, page, size):
+def test_api_list_users_response_not_empty(base_url: str, page: int, size: int):
     response = requests.get(f"{base_url}/api/users/?page={page}&size={size}")
     assert response.status_code == 200
     data = response.json()
@@ -42,7 +42,7 @@ def test_api_list_users_response_not_empty(base_url, page, size):
     (1, 12),
     (1, 15)
 ])
-def test_api_list_users_validate_response(base_url, page, size):
+def test_api_list_users_validate_response(base_url: str, page: int, size: int):
     response = requests.get(f"{base_url}/api/users/?page={page}&size={size}")
     assert response.status_code == HTTPStatus.OK
 
@@ -55,19 +55,19 @@ def test_api_list_users_validate_response(base_url, page, size):
             pytest.fail(f"Невалидные данные пользователя: {e}")
 
 
-def test_api_create_user_status_code_201(base_url):
+def test_api_create_user_status_code_201(base_url: str):
     response = requests.post(f"{base_url}/api/users",
                              json={"name": "morpheus", "job": "leader"})
     assert response.status_code == 201
 
 
-def test_api_create_user_validate_response_schema(base_url):
+def test_api_create_user_validate_response_schema(base_url: str):
     response = requests.post(f"{base_url}/api/users",
                              json={"name": "morpheus", "job": "leader"})
     UserDataCreateResponse(**response.json())
 
 
-def test_api_create_user_attributes_match_expected_values(base_url):
+def test_api_create_user_attributes_match_expected_values(base_url: str):
     response = requests.post(f"{base_url}/api/users",
                              json={"name": "morpheus", "job": "leader"})
     data = response.json()
@@ -78,7 +78,7 @@ def test_api_create_user_attributes_match_expected_values(base_url):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_put_update_user_status_code_200(base_url, user_id):
+def test_api_put_update_user_status_code_200(base_url: str, user_id: int):
     response = requests.put(url=f"{base_url}/api/users/{user_id}",
                             json={"name": "morpheus", "job": "zion resident"})
     assert response.status_code == 200
@@ -87,7 +87,7 @@ def test_api_put_update_user_status_code_200(base_url, user_id):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_put_update_user_validate_response_schema(base_url, user_id):
+def test_api_put_update_user_validate_response_schema(base_url: str, user_id: int):
     response = requests.put(url=f"{base_url}/api/users/{user_id}",
                             json={"name": "morpheus", "job": "zion resident"})
     UserDataUpdateResponse(**response.json())
@@ -96,7 +96,7 @@ def test_api_put_update_user_validate_response_schema(base_url, user_id):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_patch_update_user_status_code_200(base_url, user_id):
+def test_api_patch_update_user_status_code_200(base_url: str, user_id: int):
     response = requests.patch(url=f"{base_url}/api/users/{user_id}",
                               json={"name": "morpheus", "job": "zion resident"})
     assert response.status_code == 200
@@ -105,7 +105,7 @@ def test_api_patch_update_user_status_code_200(base_url, user_id):
 @pytest.mark.parametrize("user_id", [
     (2)
 ])
-def test_api_patch_update_user_validate_response_schema(base_url, user_id):
+def test_api_patch_update_user_validate_response_schema(base_url: str, user_id: int):
     response = requests.patch(url=f"{base_url}/api/users/{user_id}",
                               json={"name": "morpheus", "job": "zion resident"})
     UserDataUpdateBody(**response.json())
@@ -120,7 +120,7 @@ def test_api_patch_update_user_validate_response_schema(base_url, user_id):
     (1, 12),
     (1, 15)
 ])
-def test_api_list_users_pagination_basic_params(base_url, test_data_users, page, size):
+def test_api_list_users_pagination_basic_params(base_url: str, test_data_users: list, page: int, size: int):
     response = requests.get(f"{base_url}/api/users/?page={page}&size={size}")
     assert response.status_code == HTTPStatus.OK
 
@@ -151,7 +151,7 @@ def test_api_list_users_pagination_basic_params(base_url, test_data_users, page,
 
 
 @pytest.mark.parametrize("size", [1, 3, 6, 10, 12, 15])
-def test_api_list_users_pagination_pages_count(base_url, test_data_users, size):
+def test_api_list_users_pagination_pages_count(base_url: str, test_data_users: list, size: int):
     response = requests.get(f"{base_url}/api/users/?size={size}")
     assert response.status_code == HTTPStatus.OK
 
@@ -163,7 +163,7 @@ def test_api_list_users_pagination_pages_count(base_url, test_data_users, size):
                "pages"] == expected_pages, f"Количество страниц: ожидается {expected_pages}, получено {paginated_data.pages}"
 
 
-def test_api_list_users_pagination_different_pages(base_url, test_data_users):
+def test_api_list_users_pagination_different_pages(base_url: str, test_data_users: list):
     size = 6
     first_page = 1
     second_page = 2
